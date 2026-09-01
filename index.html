@@ -91,8 +91,7 @@
     function drawNumbers(count){
       const picked=[];
       while(picked.length<count){
-        const n=rand78();
-        if(!unique.checked || !picked.includes(n)) picked.push(n);
+        picked.push(rand78());
       }
       return picked;
     }
