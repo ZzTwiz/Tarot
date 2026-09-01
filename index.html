@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1～78 隨機抽牌</title>
+  <style>
+    :root{
+      --bg:#111318;
+      --panel:#191d24;
+      --panel2:#222833;
+      --text:#f4f5f7;
+      --muted:#aeb5c0;
+      --line:#323946;
+      --accent:#d8c08a;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC",sans-serif;
+      background:radial-gradient(circle at top,#202633 0,#111318 45%);
+      color:var(--text);
+    }
+    .wrap{
+      width:min(1100px,calc(100% - 32px));
+      margin:0 auto;
+      padding:42px 0 60px;
+    }
+    header{text-align:center;margin-bottom:26px}
+    h1{margin:0 0 8px;font-size:clamp(28px,5vw,46px);letter-spacing:.08em}
+    .sub{margin:0;color:var(--muted)}
+    .controls{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:10px;
+      margin:24px 0 14px;
+    }
+    button{
+      appearance:none;
+      border:1px solid var(--line);
+      background:var(--panel);
+      color:var(--text);
+      border-radius:12px;
+      min-height:46px;
+      padding:0 18px;
+      font-size:16px;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+    button:hover{transform:translateY(-1px);border-color:var(--accent)}
+    button.primary{background:var(--accent);color:#17130c;border-color:var(--accent);font-weight:700}
+    .options{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:12px;
+      color:var(--muted);
+      font-size:14px;
+      margin-bottom:28px;
+    }
+    .results{
+      display:grid;
+      gap:18px;
+      justify-content:center;
+      align-items:start;
+    }
+    .results[data-count="1"]{grid-template-columns:minmax(220px,300px)}
+    .results[data-count="2"]{grid-template-columns:repeat(2,minmax(180px,260px))}
+    .results[data-count="3"]{grid-template-columns:repeat(3,minmax(160px,240px))}
+    .results[data-count="4"]{grid-template-columns:repeat(4,minmax(145px,220px))}
+    .card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:18px;
+      overflow:hidden;
+      min-width:0;
+      animation:pop .35s ease both;
+    }
+    .imagebox{
+      aspect-ratio:2/3;
+      background:linear-gradient(145deg,#252b36,#151920);
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+    .imagebox img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+      background:#0d0f13;
+    }
+    .placeholder{
+      position:absolute;
+      inset:0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:20px;
+      color:var(--muted);
+    }
+    .placeholder strong{
+      display:block;
+      color:var(--text);
+      font-size:64px;
+      line-height:1;
+      margin:8px 0 12px;
+    }
+    .meta{
+      padding:13px 15px 15px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+    }
+    .meta .pos{font-weight:700}
+    .meta .num{color:var(--muted);font-size:14px}
+    .status{
+      text-align:center;
+      min-height:24px;
+      margin:14px 0 0;
+      color:var(--muted);
+    }
+    .help{
+      margin:34px auto 0;
+      max-width:760px;
+      border-top:1px solid var(--line);
+      padding-top:24px;
+      color:var(--muted);
+      line-height:1.8;
+      font-size:14px;
+    }
+    code{
+      background:var(--panel2);
+      color:var(--text);
+      border-radius:6px;
+      padding:2px 6px;
+    }
+    @keyframes pop{
+      from{opacity:0;transform:translateY(8px) scale(.98)}
+      to{opacity:1;transform:none}
+    }
+    @media (max-width:760px){
+      .results[data-count="3"],
+      .results[data-count="4"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media (max-width:460px){
+      .wrap{width:min(100% - 20px,1100px);padding-top:28px}
+      .results[data-count="2"],
+      .results[data-count="3"],
+      .results[data-count="4"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .meta{padding:10px;font-size:14px}
+      .placeholder strong{font-size:48px}
+      button{flex:1 1 calc(50% - 10px)}
+    }
+    @media (prefers-reduced-motion:reduce){
+      .card{animation:none}
+      button{transition:none}
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <h1>隨機抽牌</h1>
+      <p class="sub">從 1～78 中抽取，圖片會自動對應到 images 資料夾。</p>
+    </header>
+
+    <section class="controls" aria-label="抽牌張數">
+      <button class="primary" data-count="1">抽一張</button>
+      <button data-count="2">抽二張</button>
+      <button data-count="3">抽三張</button>
+      <button data-count="4">抽四張</button>
+      <button id="reset">重設</button>
+    </section>
+
+    <div class="options">
+      <label><input id="unique" type="checkbox" checked /> 同一次抽牌不重複</label>
+    </div>
+
+    <section id="results" class="results" data-count="1" aria-live="polite"></section>
+    <p id="status" class="status">請選擇要抽幾張牌。</p>
+
+    <section class="help">
+      <strong style="color:var(--text)">圖片怎麼放？</strong><br>
+      把圖片放進 <code>images</code> 資料夾，並命名成
+      <code>1.jpg</code>、<code>2.jpg</code>……<code>78.jpg</code>。
+      如果某張圖片還沒放上去，網站會先顯示該牌的編號，不會壞掉。
+    </section>
+  </main>
+
+  <script>
+    const results = document.getElementById("results");
+    const status = document.getElementById("status");
+    const unique = document.getElementById("unique");
+
+    function rand78() {
+      return Math.floor(Math.random() * 78) + 1;
+    }
+
+    function drawNumbers(count) {
+      const picked = [];
+      while (picked.length < count) {
+        const n = rand78();
+        if (!unique.checked || !picked.includes(n)) picked.push(n);
+      }
+      return picked;
+    }
+
+    function makeCard(number, index) {
+      const card = document.createElement("article");
+      card.className = "card";
+      card.style.animationDelay = `${index * 60}ms`;
+
+      const imagebox = document.createElement("div");
+      imagebox.className = "imagebox";
+
+      const placeholder = document.createElement("div");
+      placeholder.className = "placeholder";
+      placeholder.innerHTML = `<span>CARD</span><strong>${number}</strong><span>尚未放入圖片</span>`;
+
+      const img = document.createElement("img");
+      img.alt = `第 ${index + 1} 張，編號 ${number}`;
+      img.src = `images/${number}.jpg`;
+      img.hidden = true;
+
+      img.addEventListener("load", () => {
+        img.hidden = false;
+        placeholder.hidden = true;
+      });
+
+      img.addEventListener("error", () => {
+        img.hidden = true;
+        placeholder.hidden = false;
+      });
+
+      imagebox.append(placeholder, img);
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.innerHTML = `<span class="pos">第 ${index + 1} 張</span><span class="num">編號 ${number}</span>`;
+
+      card.append(imagebox, meta);
+      return card;
+    }
+
+    function draw(count) {
+      const numbers = drawNumbers(count);
+      results.replaceChildren();
+      results.dataset.count = String(count);
+
+      numbers.forEach((n, i) => results.appendChild(makeCard(n, i)));
+      status.textContent = `抽到：${numbers.join("、")}`;
+    }
+
+    document.querySelectorAll("[data-count]").forEach(btn => {
+      btn.addEventListener("click", () => draw(Number(btn.dataset.count)));
+    });
+
+    document.getElementById("reset").addEventListener("click", () => {
+      results.replaceChildren();
+      results.dataset.count = "1";
+      status.textContent = "請選擇要抽幾張牌。";
+    });
+  </script>
+</body>
+</html>
