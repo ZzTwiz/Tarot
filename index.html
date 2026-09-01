@@ -190,7 +190,7 @@
     <section class="help">
       <strong style="color:var(--text)">圖片怎麼放？</strong><br>
       把圖片放進 <code>images</code> 資料夾，並命名成
-      <code>1.jpg</code>、<code>2.jpg</code>……<code>78.jpg</code>。
+      <code>1.jpeg</code>、<code>2.jpeg</code>……<code>78.jpeg</code>。
       如果某張圖片還沒放上去，網站會先顯示該牌的編號，不會壞掉。
     </section>
   </main>
@@ -227,7 +227,7 @@
 
       const img = document.createElement("img");
       img.alt = `第 ${index + 1} 張，編號 ${number}`;
-      img.src = `images/${number}.jpg`;
+      img.src = `images/${number}.jpeg`;
       img.hidden = true;
 
       img.addEventListener("load", () => {
